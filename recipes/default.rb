@@ -6,3 +6,8 @@
 #
 # All rights reserved - Do Not Redistribute
 #
+
+git node['ojs']['install_dir'] do
+  repository node['ojs']['git_repo']
+  revision node['ojs']['git_revision']
+end
