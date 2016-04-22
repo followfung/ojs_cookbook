@@ -29,3 +29,7 @@ directory "#{node['nginx']['default_root']}/files" do
   owner node['nginx']['user']
   group node['nginx']['group']
 end
+
+link '/var/lib/mysql/mysql.sock' do
+  to "/var/run/mysql-#{node['mysql']['service_name']}/mysqld.sock"
+end
