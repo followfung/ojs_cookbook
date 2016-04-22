@@ -121,9 +121,9 @@ enable_beacon = On
 
 driver = mysql
 host = localhost
-username = ojs
-password = ojs
-name = ojs
+username = <%= defined?(@database_username) ? @database_username : 'ojs' %>
+password = <%= defined?(@database_password) ? @database_password : 'ojs' %>
+name = <%= defined?(@database_name) ? @database_name : 'ojs' %>
 
 ; Enable persistent connections
 persistent = Off
