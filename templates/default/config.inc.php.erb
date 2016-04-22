@@ -52,7 +52,7 @@ scheduled_tasks = Off
 ; I.e.:
 ; <entry key="Europe/Amsterdam" name="Amsterdam" />
 ; time_zone="Amsterdam"
-time_zone = <% defined?(@time_zone) ? @disable_path_info : 'UTC' %>
+time_zone = <%= defined?(@time_zone) ? @time_zone : 'UTC' %>
 
 ; Short and long date formats
 date_format_trunc = "%m-%d"
@@ -65,7 +65,7 @@ time_format = "%I:%M %p"
 ; Use URL parameters instead of CGI PATH_INFO. This is useful for
 ; broken server setups that don't support the PATH_INFO environment
 ; variable.
-disable_path_info = <% defined?(@disable_path_info) ? @disable_path_info : 'Off' %>
+disable_path_info = <%= defined?(@disable_path_info) ? @disable_path_info : 'Off' %>
 
 ; Use fopen(...) for URL-based reads. Modern versions of dspace
 ; will not accept requests using fopen, as it does not provide a
@@ -124,9 +124,9 @@ enable_beacon = On
 
 driver = mysql
 host = localhost
-username = ojs
-password = ojs
-name = ojs
+username = <%= defined?(@database_user) ? @database_user : 'ojs' %>
+password = <%= defined?(@database_passwprd) ? @database_passwprd : 'ojs' %>
+name = <%= defined?(@database_name) ? @database_name : 'ojs' %>
 
 ; Enable persistent connections
 persistent = Off

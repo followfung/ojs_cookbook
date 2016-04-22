@@ -23,3 +23,9 @@ template "#{node['ojs']['install_dir']}/config.inc.php" do
   owner node['nginx']['user']
   variables node['ojs']['config']
 end
+
+# Create file upload directory
+directory "#{node['nginx']['default_root']}/files" do
+  owner node['nginx']['user']
+  group node['nginx']['group']
+end
