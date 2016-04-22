@@ -7,7 +7,7 @@
 ;
 ; config.TEMPLATE.inc.php
 ;
-; Copyright (c) 2014-2016 Simon Fraser University Library
+; Copyright (c) 2013-2016 Simon Fraser University Library
 ; Copyright (c) 2003-2016 John Willinsky
 ; Distributed under the GNU GPL v2. For full terms see the file docs/COPYING.
 ;
@@ -31,11 +31,14 @@ installed = Off
 ; The canonical URL to the OJS installation (excluding the trailing slash)
 base_url = "http://pkp.sfu.ca/ojs"
 
+; Path to the registry directory (containing various settings files)
+; Although the files in this directory generally do not contain any
+; sensitive information, the directory can be moved to a location that
+; is not web-accessible if desired
+registry_dir = registry
+
 ; Session cookie name
 session_cookie_name = OJSSID
-
-; Session cookie path; if not specified, defaults to the detected base path
-; session_cookie_path = /
 
 ; Number of days to save login cookie for if user selects to remember
 ; (set to 0 to force expiration at end of current session)
@@ -46,13 +49,11 @@ session_lifetime = 30
 ; execute periodically
 scheduled_tasks = Off
 
-; Site time zone
-; Please refer to lib/pkp/registry/timeZones.xml for a full list of supported
-; time zones.
-; I.e.:
-; <entry key="Europe/Amsterdam" name="Amsterdam" />
-; time_zone="Amsterdam"
-time_zone = <%= defined?(@time_zone) ? @time_zone : 'UTC' %>
+; Scheduled tasks will send email about processing
+; only in case of errors. Set to off to receive
+; all other kind of notification, including success,
+; warnings and notices.
+scheduled_tasks_report_error_only = On
 
 ; Short and long date formats
 date_format_trunc = "%m-%d"
@@ -64,7 +65,7 @@ time_format = "%I:%M %p"
 
 ; Use URL parameters instead of CGI PATH_INFO. This is useful for
 ; broken server setups that don't support the PATH_INFO environment
-; variable.
+; variable. Use of this mode is recommended as a last resort.
 disable_path_info = <%= defined?(@disable_path_info) ? @disable_path_info : 'Off' %>
 
 ; Use fopen(...) for URL-based reads. Modern versions of dspace
@@ -107,10 +108,6 @@ citation_checking_max_processes = 3
 ; Display a message on the site admin and journal manager user home pages if there is an upgrade available
 show_upgrade_warning = On
 
-; Set the following parameter to off if you want to work with the uncompiled (non-minified) JavaScript
-; source for debugging or if you are working off a development branch without compiled JavaScript.
-enable_minified = Off
-
 ; Provide a unique site ID and OAI base URL to PKP for statistics and security
 ; alert purposes only.
 enable_beacon = On
@@ -124,9 +121,9 @@ enable_beacon = On
 
 driver = mysql
 host = localhost
-username = <%= defined?(@database_user) ? @database_user : 'ojs' %>
-password = <%= defined?(@database_passwprd) ? @database_passwprd : 'ojs' %>
-name = <%= defined?(@database_name) ? @database_name : 'ojs' %>
+username = ojs
+password = ojs
+name = ojs
 
 ; Enable persistent connections
 persistent = Off
@@ -191,10 +188,11 @@ connection_charset = Off
 ; Must be set to "Off" if not supported by the database server
 database_charset = Off
 
-; Enable character normalization to utf-8 (recommended)
+; Enable character normalization to utf-8
 ; If disabled, strings will be passed through in their native encoding
 ; Note that client_charset and database collation must be set
 ; to "utf-8" for this to work, as characters are stored in utf-8
+; (Note that this is generally no longer needed, as UTF8 adoption is good.)
 charset_normalization = Off
 
 ;;;;;;;;;;;;;;;;;
@@ -245,9 +243,8 @@ session_check_ip = On
 
 ; The encryption (hashing) algorithm to use for encrypting user passwords
 ; Valid values are: md5, sha1
-; NOTE: This hashing method is deprecated, but necessary to permit gradual
-; migration of old password hashes.
-encryption = sha1
+; Note that sha1 requires PHP >= 4.3.0
+encryption = md5
 
 ; The unique salt to use for generating password reset hashes
 salt = "YouMustSetASecretKeyHere!!"
@@ -256,17 +253,25 @@ salt = "YouMustSetASecretKeyHere!!"
 reset_seconds = 7200
 
 ; Allowed HTML tags for fields that permit restricted HTML.
-; Use e.g. "img[src,alt],p" to allow "src" and "alt" attributes to the "img"
-; tag, and also to permit the "p" paragraph tag. Unspecified attributes will be
-; stripped.
-allowed_html = "a[href|target|title],em,strong,cite,code,ul,ol,li[class],dl,dt,dd,b,i,u,img[src|alt],sup,sub,br,p"
+; For PHP 5.0.5 and greater, allowed attributes must be specified individually
+; e.g. <img src|alt> to allow "src" and "alt" attributes. Unspecified
+; attributes will be stripped. For PHP below 5.0.5 attributes may not be
+; specified in this way.
+allowed_html = "<a href|target> <em> <strong> <cite> <code> <ul> <ol> <li> <dl> <dt> <dd> <b> <i> <u> <img src|alt> <sup> <sub> <br> <p>"
 
-;Is implicit authentication enabled or not
+; Prevent VIM from attempting to highlight the rest of the config file
+; with unclosed tags:
+; </p></sub></sup></u></i></b></dd></dt></dl></li></ol></ul></code></cite></strong></em></a>
 
+
+; Configure whether implicit authentication (request headers) is used.
+; Valid values are: On, Off, Optional
+; If On or Optional, request headers are consulted for account metadata so
+; ensure that users cannot spoof headers. If Optional, users may use either
+; implicit authentication or local accounts to access the system.
 ;implicit_auth = On
 
-;Implicit Auth Header Variables
-
+; Implicit Auth Header Variables
 ;implicit_auth_header_first_name = HTTP_GIVENNAME
 ;implicit_auth_header_last_name = HTTP_SN
 ;implicit_auth_header_email = HTTP_MAIL
@@ -278,8 +283,8 @@ allowed_html = "a[href|target|title],em,strong,cite,code,ul,ol,li[class],dl,dt,d
 ; A space delimited list of uins to make admin
 ;implicit_auth_admin_list = "jdoe@email.ca jshmo@email.ca"
 
-; URL of the implicit auth 'Way Finder' page. See pages/login/LoginHandler.inc.php for usage.
-
+; URL of the implicit auth 'Way Finder' (Discovery Service [DS]) page.
+; See pages/login/LoginHandler.inc.php for usage.
 ;implicit_auth_wayf_url = "/Shibboleth.sso/wayf"
 
 
@@ -298,8 +303,8 @@ allowed_html = "a[href|target|title],em,strong,cite,code,ul,ol,li[class],dl,dt,d
 ; smtp_port = 25
 
 ; Enable SMTP authentication
-; Supported mechanisms: ssl, tls
-; smtp_auth = ssl
+; Supported mechanisms: PLAIN, LOGIN, CRAM-MD5, and DIGEST-MD5
+; smtp_auth = PLAIN
 ; smtp_username = username
 ; smtp_password = password
 
@@ -314,6 +319,11 @@ allowed_html = "a[href|target|title],em,strong,cite,code,ul,ol,li[class],dl,dt,d
 ; This is useful if setting up a site-wide noreply address
 ; The reply-to field will be set with the reply-to or from address.
 ; force_default_envelope_sender = Off
+
+; Enable attachments in the various "Send Email" pages.
+; (Disabling here will not disable attachments on features that
+; require them, e.g. attachment-based reviews)
+enable_attachments = On
 
 ; Amount of time required between attempts to send non-editorial emails
 ; in seconds. This can be used to help prevent email relaying via OJS.
@@ -401,14 +411,8 @@ page_links = 10
 
 [captcha]
 
-; Whether or not to enable ReCaptcha
-recaptcha = off
-
-; Public key for reCaptcha (see http://www.google.com/recaptcha)
-recaptcha_public_key = your_public_key
-
-; Private key for reCaptcha (see http://www.google.com/recaptcha)
-recaptcha_private_key = your_private_key
+; Whether or not to enable Captcha features
+captcha = off
 
 ; Whether or not to use Captcha on user registration
 captcha_on_register = on
@@ -418,6 +422,18 @@ captcha_on_comments = on
 
 ; Whether or not to use Captcha on notification mailing list registration
 captcha_on_mailinglist = on
+
+; Font location for font to use in Captcha images
+font_location = /usr/share/fonts/truetype/freefont/FreeSerif.ttf
+
+; Whether to use reCaptcha instead of default Captcha
+recaptcha = off
+
+; Public key for reCaptcha (see http://www.google.com/recaptcha)
+; recaptcha_public_key = your_public_key
+
+; Private key for reCaptcha (see http://www.google.com/recaptcha)
+; recaptcha_private_key = your_private_key
 
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -437,11 +453,17 @@ perl = /usr/bin/perl
 ; tar (used in backup plugin, translation packaging)
 tar = /bin/tar
 
-; On systems that do not have libxsl/xslt libraries installed, or for those who
-; require a specific XSLT processor, you may enter the complete path to the
-; XSLT renderer tool, with any required arguments. Use %xsl to substitute the
-; location of the XSL stylesheet file, and %xml for the location of the XML
-; source file; eg:
+; egrep (used in copyAccessLogFileTool)
+egrep = /bin/egrep
+
+; gzip (used in FileManager)
+gzip = /bin/gzip
+
+; On systems that do not have PHP4's Sablotron/xsl or PHP5's libxsl/xslt
+; libraries installed, or for those who require a specific XSLT processor,
+; you may enter the complete path to the XSLT renderer tool, with any
+; required arguments. Use %xsl to substitute the location of the XSL
+; stylesheet file, and %xml for the location of the XML source file; eg:
 ; /usr/bin/java -jar ~/java/xalan.jar -HTML -IN %xml -XSL %xsl
 xslt_command = ""
 
@@ -467,6 +489,9 @@ xslt_command = ""
 
 [debug]
 
+; Display execution stats in the footer
+show_stats =  Off
+
 ; Display a stack trace when a fatal error occurs.
 ; Note that this may expose private information and should be disabled
 ; for any production system.
@@ -480,3 +505,24 @@ deprecation_warnings = Off
 
 ; Log web service request information for debugging
 log_web_service_info = Off
+
+;;;;;;;;;;;;;;;;
+; PLN Settings ;
+;;;;;;;;;;;;;;;;
+
+[lockss]
+
+; Domain name where deposits will be sent to.
+; The URL of your network's staging server. Do not change this unless instructed
+; to do so by someone from your network. You do not need to create an 
+; account or login on this server. 
+; 
+; For more information, please see https://pkp.sfu.ca/pkp-lockss/
+; 
+; If you do change this value, a journal manager must also reset each deposit in
+; each journal so that the new network will receive and process the deposits. 
+; Deposits can be reset for each journal on the PLN Plugin's status page at 
+; Journal Management > System Plugins > Generic Plugins > PKP PLN Plugin
+; 
+; pln_url = http://pkp-pln.lib.sfu.ca
+; pln_status_docs = http://pkp-pln.lib.sfu.ca/docs/status
