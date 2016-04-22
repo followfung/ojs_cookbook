@@ -52,7 +52,7 @@ scheduled_tasks = Off
 ; I.e.:
 ; <entry key="Europe/Amsterdam" name="Amsterdam" />
 ; time_zone="Amsterdam"
-time_zone = <% defined?(@time_zone) ? a : 'UTC' %>
+time_zone = <% defined?(@time_zone) ? @disable_path_info : 'UTC' %>
 
 ; Short and long date formats
 date_format_trunc = "%m-%d"
@@ -65,7 +65,7 @@ time_format = "%I:%M %p"
 ; Use URL parameters instead of CGI PATH_INFO. This is useful for
 ; broken server setups that don't support the PATH_INFO environment
 ; variable.
-disable_path_info = <% defined?(@disable_path_info) ? a : 'Off' %>
+disable_path_info = <% defined?(@disable_path_info) ? @disable_path_info : 'Off' %>
 
 ; Use fopen(...) for URL-based reads. Modern versions of dspace
 ; will not accept requests using fopen, as it does not provide a
