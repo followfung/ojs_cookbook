@@ -15,3 +15,11 @@ git node['ojs']['install_dir'] do
   user node['nginx']['user']
   group node['nginx']['group']
 end
+
+# Create config.inc.php from template
+template "#{node['ojs']['install_dir']}/config.inc.php" do
+  source 'config.inc.php.erb'
+  group node['nginx']['user']
+  owner node['nginx']['user']
+  variables node['ojs']['config']
+end
